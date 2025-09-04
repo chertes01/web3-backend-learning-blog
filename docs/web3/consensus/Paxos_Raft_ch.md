@@ -181,12 +181,13 @@ Raft 是基于 Paxos 的日志复制一致性算法，旨在提供 **易理解�
 
 ```mermaid
 sequenceDiagram
-    participant 提议者 as Proposer
-    participant 接受者 as Acceptor
-    participant 学习者 as Learner
+    participant Proposer as Proposer
+    participant Acceptor as Acceptor
+    participant Learner as Learner
 
-    提议者->>接受者: Prepare(N)
-    接受者-->>提议者: Promise(Na, Va)
-    提议者->>接受者: Accept(N, V)
-    接受者-->>提议者: Agree
-    接受者-->>学习
+    Proposer->>Acceptor: Prepare(N)
+    Acceptor-->>Proposer: Promise(Na, Va)
+    Proposer->>Acceptor: Accept(N, V)
+    Acceptor-->>Proposer: Agree
+    Acceptor-->>Learner: Notify(Value)
+```
