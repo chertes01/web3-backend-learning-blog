@@ -11,10 +11,12 @@ Goal: Systematically learn **smart contracts + backend tech stack**, and documen
 - [Blockchain Principles](docs/web3/blockchain.md)
 - Consensus Algorithms
   - [2PC, 3PC, and Byzantine Generals Problem](docs/web3/consensus/2PC-3PC-BGP.md)
-  - [PoW (Proof of Work)](docs/web3/consensus/PoW.md)
-  - [PoS (Proof of Stake)](docs/web3/consensus/PoS.md)
+  - [Consensus Systems](docs/web3/consensus/consensusSystems.md)
   - [PBFT Algorithms](docs/web3/consensus/PBFT.md)
   - [Paxos & Raft](docs/web3/consensus/Paxos_Raft.md)
+  - [PoW (Proof of Work)](docs/web3/consensus/PoW.md)
+  - [PoS (Proof of Stake)](docs/web3/consensus/PoS.md)
+
 
 ### 🛠 Backend Development
 - Go Language

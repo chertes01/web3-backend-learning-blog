@@ -11,10 +11,11 @@
 - [区块链原理](docs/web3/blockchain.md)
 - 共识算法
   - [2PC、3PC 与拜占庭将军问题](docs/web3/consensus/2PC-3PC-BGP_ch.md)
+  - [共识系统](docs/web3/consensus/consensusSystems_ch.md)
+  - [PBFT 算法](docs/web3/consensus/PBFT_ch.md)
   - [Paxos & Raft](docs/web3/consensus/Paxos_Raft_ch.md)
   - [PoW 工作量证明](docs/web3/consensus/PoW_ch.md)
   - [PoS 权益证明](docs/web3/consensus/PoS_ch.md)
-  - [PBFT 算法](docs/web3/consensus/PBFT_ch.md)
 
 ### 🛠 后端开发
 - Go 语言
