@@ -10,6 +10,7 @@
 ### 🔗 Web3 基础
 - [区块链原理](docs/web3/blockchain.md)
 - 共识算法
+  - [2PC、3PC 与拜占庭将军问题](docs/web3/consensus/2PC-3PC-BGP.md)
   - [PoW 工作量证明](docs/web3/consensus/PoW.md)
   - [PoS 权益证明](docs/web3/consensus/PoS.md)
   - [BFT 系列算法](docs/web3/consensus/BFT.md)
