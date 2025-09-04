@@ -65,9 +65,35 @@ Paxos 是一种在异步分布式系统下设计的共识算法，提供 **安�
 ### 1.6 常见问题
 
 - **活锁 (Livelock)**：多个 Proposer 相互覆盖导致无法达成稳定共识  
-- **解决策略**：  
-  - 固定 Proposer  
-  - 超时和随机提案号机制  
+### 1.6 常见问题
+
+#### 活锁 (Livelock)
+
+在 Paxos 算法的接受阶段，可能出现 **活锁**：多个 Proposer 同时发起提案，相互覆盖，导致系统无法进入稳定共识状态。
+
+**实例说明**：
+
+假设有三个节点：P1、P2、P3，P1 和 P2 都是 Proposer，P3 是 Acceptor。
+
+1. **初始状态**：P1 和 P2 同时发起提案  
+   - P1 提案编号 N1  
+   - P2 提案编号 N2，其中 N2 > N1  
+
+2. **Acceptor 响应**：  
+   - P3 收到 N1 → 承诺 Promise(N1)  
+   - P3 收到 N2 → 承诺 Promise(N2)  
+
+3. **Accept 阶段冲突**：  
+   - P1 发送 Accept(N1) → 被 P3 拒绝（因 N1 < N2）  
+   - P1 增加提案号 N3 > N2 → 再次发起 Prepare  
+   - P2 同时发起新提案 N4 > N3  
+
+4. **循环发生**：P1 和 P2 不断发起新提案，互相覆盖，系统无法达成稳定共识。
+
+**解决策略**：
+
+- **固定 Proposer**：选一个固定节点发起提案，减少竞争  
+- **超时与随机化**：不同 Proposer 设置随机延时，降低同时发起提案的概率  
 
 - **FLP 定理限制**：无法在纯异步故障环境下保证终止性，Paxos 牺牲活性以保证安全性。
 
@@ -158,12 +184,12 @@ Raft 是基于 Paxos 的日志复制一致性算法，旨在提供 **易理解�
 
 ```mermaid
 sequenceDiagram
-    participant Proposer
-    participant Acceptor
-    participant Learner
+    participant 提议者 as Proposer
+    participant 接受者 as Acceptor
+    participant 学习者 as Learner
 
-    Proposer->>Acceptor: Prepare(N)
-    Acceptor-->>Proposer: Promise(Na, Va)
-    Proposer->>Acceptor: Accept(N, V)
-    Acceptor-->>Proposer: Agree
-    Acceptor-->>Learner: Notify(Value)
+    提议者->>接受者: Prepare(N)
+    接受者-->>提议者: Promise(Na, Va)
+    提议者->>接受者: Accept(N, V)
+    接受者-->>提议者: Agree
+    接受者-->>学习
