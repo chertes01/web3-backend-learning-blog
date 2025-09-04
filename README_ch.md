@@ -10,20 +10,20 @@
 ### 🔗 Web3 基础
 - [区块链原理](docs/web3/blockchain.md)
 - 共识算法
-  - [2PC、3PC 与拜占庭将军问题](docs/web3/consensus/2PC-3PC-BGP.md)
-  - [Paxos & Raft](docs/web3/consensus/Paxos_Raft.md)
-  - [PoW 工作量证明](docs/web3/consensus/PoW.md)
-  - [PoS 权益证明](docs/web3/consensus/PoS.md)
-  - [BFT 系列算法](docs/web3/consensus/BFT.md)
+  - [2PC、3PC 与拜占庭将军问题](docs/web3/consensus/2PC-3PC-BGP_ch.md)
+  - [Paxos & Raft](docs/web3/consensus/Paxos_Raft_ch.md)
+  - [PoW 工作量证明](docs/web3/consensus/PoW_ch.md)
+  - [PoS 权益证明](docs/web3/consensus/PoS_ch.md)
+  - [PBFT 算法](docs/web3/consensus/PBFT_ch.md)
 
 ### 🛠 后端开发
 - Go 语言
-  - [基础语法](docs/backend/golang/basics.md)
-  - [Go 与 HTTP](docs/backend/golang/http.md)
-  - [Go 项目实践](docs/backend/golang/project.md)
-- [MySQL 学习笔记](docs/backend/mysql.md)
-- [Redis 学习笔记](docs/backend/redis.md)
-- [HTTP 协议笔记](docs/backend/http-protocol.md)
+  - [基础语法](docs/backend/golang/basics_ch.md)
+  - [Go 与 HTTP](docs/backend/golang/http_ch.md)
+  - [Go 项目实践](docs/backend/golang/project_ch.md)
+- [MySQL 学习笔记](docs/backend/mysql_ch.md)
+- [Redis 学习笔记](docs/backend/redis_ch.md)
+- [HTTP 协议笔记](docs/backend/http-protocol_ch.md)
 
 ### 📜 智能合约
 - [Solidity 基础](docs/smart-contracts/basics.md)

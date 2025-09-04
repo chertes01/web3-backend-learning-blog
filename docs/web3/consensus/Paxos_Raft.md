@@ -183,13 +183,34 @@ Raft is a log replication consistency algorithm based on Paxos, designed to prov
 
 ```mermaid
 sequenceDiagram
-    participant Proposer as Proposer
-    participant Acceptor as Acceptor
+    participant Leader/Proposer as Leader/Proposer
+    participant Acceptor1 as Acceptor1
+    participant Acceptor2 as Acceptor2
+    participant Acceptor3 as Acceptor3
     participant Learner as Learner
 
-    Proposer->>Acceptor: Prepare(N)
-    Acceptor-->>Proposer: Promise(Na, Va)
-    Proposer->>Acceptor: Accept(N, V)
-    Acceptor-->>Proposer: Agree
-    Acceptor-->>Learner: Notify(Value)
+    %% 阶段一：Prepare
+    Leader/Proposer->>Acceptor1: Prepare(N)
+    Leader/Proposer->>Acceptor2: Prepare(N)
+    Leader/Proposer->>Acceptor3: Prepare(N)
+
+    %% Acceptor 响应
+    Acceptor1-->>Leader/Proposer: Promise(Na1, Va1)
+    Acceptor2-->>Leader/Proposer: Promise(Na2, Va2)
+    Acceptor3-->>Leader/Proposer: Promise(Na3, Va3)
+
+    %% 阶段二：Accept
+    Leader/Proposer->>Acceptor1: Accept(N, V)
+    Leader/Proposer->>Acceptor2: Accept(N, V)
+    Leader/Proposer->>Acceptor3: Accept(N, V)
+
+    %% Acceptor 同意
+    Acceptor1-->>Leader/Proposer: Agree
+    Acceptor2-->>Leader/Proposer: Agree
+    Acceptor3-->>Leader/Proposer: Agree
+
+    %% 阶段三：通知 Learner
+    Acceptor1-->>Learner: Notify(V)
+    Acceptor2-->>Learner: Notify(V)
+    Acceptor3-->>Learner: Notify(V)
 ```
