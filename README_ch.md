@@ -19,7 +19,10 @@
 
 ### 🛠 后端开发
 - Go 语言
-  - [基础语法](docs/backend/golang/basics_ch.md)
+  - [基础语法](docs/backend/golang/basics/)
+   - [基本变量类型](docs/backend/golang/basics/basicDataTypes/basicDataTypes_ch.md)
+   - [变量声明](docs/backend/golang/basics/variableDefinition/variableDefinition_ch.md)
+   - [指针](docs/backend/golang/basics/)
   - [Go 与 HTTP](docs/backend/golang/http_ch.md)
   - [Go 项目实践](docs/backend/golang/project_ch.md)
 - [MySQL 学习笔记](docs/backend/mysql_ch.md)
