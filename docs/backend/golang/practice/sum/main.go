@@ -18,7 +18,7 @@
 输出：[0,1]
 */
 
-package main
+package mai
 
 import (
 	"fmt"
