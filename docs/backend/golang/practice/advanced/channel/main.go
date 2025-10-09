@@ -18,9 +18,11 @@ var (
 func getNums() {
 
 	for i := 1; i <= 10; i++ {
-		ch <- i //Send value to channel
+		//Send value to channel
+		ch <- i
 	}
-	close(ch) //Close the channel after sending
+	//Close the channel after sending
+	close(ch)
 }
 
 /*
@@ -34,9 +36,11 @@ var (
 
 func getRandomNum() {
 	for i := 0; i < 100; i++ {
-		cacheCh <- rand.Intn(1000) //Creat a random value and send the value to channel
+		//Creat a random value and send the value to channel
+		cacheCh <- rand.Intn(1000)
 	}
-	close(cacheCh) //Close the channel after sending
+	//Close the channel after sending
+	close(cacheCh)
 }
 
 func main() {
