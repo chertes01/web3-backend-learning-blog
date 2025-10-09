@@ -1,4 +1,4 @@
-# MySQL DQL 学习笔记
+# MySQL DQL 学习笔记（查询语言全攻略）
 
 ---
 
@@ -30,15 +30,15 @@ SELECT ID, Name, Age, Gender, idCare, Entrydate, Workplace FROM employee;
 
 **字段别名**
 ```sql
-SELECT Workplace AS '工作地点' FROM employee;
+SELECT Workplace AS 工作地点 FROM employee;
 ```
-- `AS` 可为结果集字段起别名。
+- `AS` 可为结果集字段起别名。推荐用反引号或不加引号，避免用单引号。
 
 **去重**
 ```sql
 SELECT DISTINCT Workplace FROM employee;
 ```
-- `DISTINCT` 去除重复值。
+- `DISTINCT` 去除重复值。只对整体去重，不是针对单个字段。
 
 ---
 
@@ -59,7 +59,7 @@ SELECT * FROM employee WHERE Age <= 30;
 SELECT * FROM employee WHERE Age <= 30 AND Gender = 'male';
 SELECT * FROM employee WHERE Age <= 30 && Gender = 'male';
 ```
-- `AND` 与 `&&` 效果一样。
+- `AND` 与 `&&` 效果一样，但推荐用 AND/OR。
 
 **范围查询**
 ```sql
@@ -82,8 +82,10 @@ SELECT * FROM employee WHERE Age IN (31, 28, 29);
 **模糊查询**
 ```sql
 SELECT * FROM employee WHERE idCare LIKE '%8999';
+SELECT * FROM employee WHERE Name LIKE 'A%';
+SELECT * FROM employee WHERE Name LIKE '____';  -- 匹配4个字符的名字
 ```
-- `%` 表示任意长度字符串。
+- `%` 表示任意长度字符串，`_` 表示单个字符。
 
 ---
 
@@ -91,10 +93,10 @@ SELECT * FROM employee WHERE idCare LIKE '%8999';
 
 **基本聚合**
 ```sql
-SELECT COUNT(*) AS '员工数量' FROM employee;
-SELECT AVG(Age) AS '平均年龄' FROM employee;
-SELECT MIN(Age) AS '年龄最小的员工' FROM employee;
-SELECT MAX(Age) AS '最年长员工' FROM employee;
+SELECT COUNT(*) AS 员工数量 FROM employee;
+SELECT AVG(Age) AS 平均年龄 FROM employee;
+SELECT MIN(Age) AS 年龄最小的员工 FROM employee;
+SELECT MAX(Age) AS 最年长员工 FROM employee;
 SELECT SUM(Age) FROM employee WHERE Workplace = 'Shenzhen';
 ```
 - `AVG`、`SUM` 会自动忽略 `NULL`。
@@ -106,18 +108,18 @@ SELECT SUM(Age) FROM employee WHERE Workplace = 'Shenzhen';
 **分组统计**
 ```sql
 SELECT Gender, COUNT(*) FROM employee GROUP BY Gender;
-SELECT Gender, COUNT(*) AS '人数', AVG(Age) AS '平均年龄' FROM employee GROUP BY Gender;
+SELECT Gender, COUNT(*) AS 人数, AVG(Age) AS 平均年龄 FROM employee GROUP BY Gender;
 ```
 
 **分组条件（HAVING）**
 ```sql
-SELECT Workplace, COUNT(*) AS '人数'
+SELECT Workplace, COUNT(*) AS 人数
 FROM employee
 WHERE Age < 40
 GROUP BY Workplace
 HAVING COUNT(*) > 2;
 ```
-- `WHERE` 过滤行，`HAVING` 过滤分组。
+- `WHERE` 过滤原始数据，`HAVING` 过滤分组结果。
 
 **执行顺序**  
 FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT
@@ -171,7 +173,7 @@ WHERE Age <= 30 AND Gender = 'male' AND CHAR_LENGTH(Name) <= 5;
 
 **分组统计**
 ```sql
-SELECT Gender, COUNT(*) AS '人数'
+SELECT Gender, COUNT(*) AS 人数
 FROM employee
 WHERE Age <= 30
 GROUP BY Gender;
@@ -204,6 +206,8 @@ LIMIT 0, 5;
 - `LIMIT 10,10` 表示从第11条开始，取10条
 - 多条件建议用 `AND`、`OR`，`&&`、`||` 兼容性差
 - `ORDER BY` 注意排序字段是否正确
+- DISTINCT 只对整体去重，单列去重建议用 GROUP BY
+- WHERE 不能用聚合函数
 
 ---
 
@@ -213,12 +217,12 @@ LIMIT 0, 5;
 |----------------|-------------------------------------------|--------------------------------------------------------------|-----------------------------------|
 | 基本查询       | SELECT 字段列表 FROM 表名;                | SELECT Name, Age, Workplace FROM employee;                   | 建议写明字段而不是用 *            |
 | 查询所有字段   | SELECT * FROM 表;                         | SELECT * FROM employee;                                      | * 会返回所有列，性能略差           |
-| 别名           | SELECT 字段 AS 别名                       | SELECT Workplace AS '工作地点' FROM employee;                | AS 可省略，但加上更清晰           |
-| 去重           | SELECT DISTINCT 字段 FROM 表;             | SELECT DISTINCT Workplace FROM employee;                     | DISTINCT 去掉重复值                |
+| 别名           | SELECT 字段 AS 别名                       | SELECT Workplace AS 工作地点 FROM employee;                  | 推荐用反引号或不加引号             |
+| 去重           | SELECT DISTINCT 字段 FROM 表;             | SELECT DISTINCT Workplace FROM employee;                     | 只对整体去重                      |
 | 条件查询       | WHERE 条件                                | SELECT * FROM employee WHERE Age = 28;                       | 执行顺序：FROM → WHERE            |
 | 比较运算       | =, <, >, <=, >=, <>                       | SELECT * FROM employee WHERE Age <= 30;                      | <> 表示不等于                     |
-| 逻辑运算       | AND / OR / NOT                            | SELECT * FROM employee WHERE Age <= 30 AND Gender = 'male';  | MySQL 中 && / \|\| 也可用          |
-| 范围查询       | BETWEEN a AND b                           | SELECT * FROM employee WHERE Age BETWEEN 30 AND 40;          | 含边界，等价于 >=30 AND <=40      |
+| 逻辑运算       | AND / OR / NOT                            | SELECT * FROM employee WHERE Age <= 30 AND Gender = 'male';  | 推荐用 AND/OR                     |
+| 范围查询       | BETWEEN a AND b                           | SELECT * FROM employee WHERE Age BETWEEN 30 AND 40;          | 含边界，顺序不能写反              |
 | 多值匹配       | IN (值1,值2,...)                          | SELECT * FROM employee WHERE Age IN (31,28,29);              | 更简洁，避免多个 OR               |
 | 模糊查询       | LIKE '匹配模式'                           | SELECT * FROM employee WHERE idCare LIKE '%8999';            | % 任意长度，_ 单个字符            |
 | 空值判断       | IS NULL / IS NOT NULL                     | SELECT * FROM employee WHERE idCare IS NULL;                 | 不能写 = NULL                     |
@@ -245,5 +249,19 @@ LIMIT 0, 5;
 - `IS NULL` 必须这样写，不能用 `= NULL`
 - `LIMIT` 的第二个参数是条数，不是结束位置
 - SQL 执行顺序和书写顺序不同
+- DISTINCT 只对整体去重，单列去重建议用 GROUP BY
+- WHERE 不能用聚合函数
+- 多条件建议用 AND/OR，避免用 &&/||
+- ORDER BY 可多字段排序，默认升序
+
+---
+
+## 🔹 WHERE 与 HAVING 的区别总结表
+
+| 项目         | WHERE           | HAVING           |
+|--------------|-----------------|------------------|
+| 执行阶段     | 分组前过滤      | 分组后过滤       |
+| 能否用聚合函数 | 否             | 可以             |
+| 典型场景     | 过滤原始数据    | 过滤分组统计结果 |
 
 ---
