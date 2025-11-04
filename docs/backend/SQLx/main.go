@@ -135,25 +135,25 @@ func main() {
 		log.Fatalf("初始化数据库失败: %v", err)
 	}
 
-	// //创建数据表
-	// err = createTable(config.DB)
-	// if err != nil {
-	// 	log.Fatalf("创建数据表失败: %v", err)
-	// }
+	//创建数据表
+	err = createTable(config.DB)
+	if err != nil {
+		log.Fatalf("创建数据表失败: %v", err)
+	}
 
-	// //更新员工信息
-	// employeesToUpdate := []models.Employee{
-	// 	{ID: 1, Name: "David", Department: "技术部", Salary: 9453.12},
-	// 	{ID: 2, Name: "Eve", Department: "财务部", Salary: 6487.33},
-	// 	{ID: 3, Name: "Grace", Department: "销售部", Salary: 7850.67},
-	// 	{ID: 4, Name: "Helen", Department: "技术部", Salary: 8120.40},
-	// 	{ID: 5, Name: "Bob", Department: "人力资源部", Salary: 7312.55},
-	// }
-	// err = updateEmployeeSalary(config.DB, employeesToUpdate)
-	// if err != nil {
-	// 	log.Fatalf("更新员工失败: %v", err)
-	// }
-	// log.Println("所有员工更新完成。")
+	//更新员工信息
+	employeesToUpdate := []models.Employee{
+		{ID: 1, Name: "David", Department: "技术部", Salary: 9453.12},
+		{ID: 2, Name: "Eve", Department: "财务部", Salary: 6487.33},
+		{ID: 3, Name: "Grace", Department: "销售部", Salary: 7850.67},
+		{ID: 4, Name: "Helen", Department: "技术部", Salary: 8120.40},
+		{ID: 5, Name: "Bob", Department: "人力资源部", Salary: 7312.55},
+	}
+	err = updateEmployeeSalary(config.DB, employeesToUpdate)
+	if err != nil {
+		log.Fatalf("更新员工失败: %v", err)
+	}
+	log.Println("所有员工更新完成。")
 	//查询技术部员工信息
 	_, err = queryTechDepartmentEmployees(config.DB)
 	if err != nil {
@@ -165,18 +165,19 @@ func main() {
 		log.Fatalf("查询工资最高的员工失败: %v", err)
 	}
 
-	// booksToUpdate := []models.Books{
-	// 	{ID: 1, Title: "The Silent Forest", Author: "Tom", Price: 68.50},
-	// 	{ID: 2, Title: "Go Programming", Author: "Linda", Price: 89.90},
-	// 	{ID: 3, Title: "Quantum Dreams", Author: "Zhang Wei", Price: 77.30},
-	// 	{ID: 4, Title: "The Last Kingdom", Author: "John", Price: 59.80},
-	// 	{ID: 5, Title: "Deep Learning Simplified", Author: "Sophia", Price: 95.60},
-	// }
-	// err = updateBooks(config.DB, booksToUpdate)
-	// if err != nil {
-	// 	log.Fatalf("更新失败: %v", err)
-	// }
-	// log.Println("更新完成。")
+	//插入书籍信息
+	booksToUpdate := []models.Books{
+		{ID: 1, Title: "The Silent Forest", Author: "Tom", Price: 68.50},
+		{ID: 2, Title: "Go Programming", Author: "Linda", Price: 89.90},
+		{ID: 3, Title: "Quantum Dreams", Author: "Zhang Wei", Price: 77.30},
+		{ID: 4, Title: "The Last Kingdom", Author: "John", Price: 59.80},
+		{ID: 5, Title: "Deep Learning Simplified", Author: "Sophia", Price: 95.60},
+	}
+	err = updateBooks(config.DB, booksToUpdate)
+	if err != nil {
+		log.Fatalf("更新失败: %v", err)
+	}
+	log.Println("更新完成。")
 	//查询价格大于 50 元的书籍
 	book, err := queryExpensiveBooks(config.DB)
 	if err != nil {
