@@ -29,12 +29,12 @@ func InitLog() {
 
 	// 3. 设置日志格式
 	Log.SetFormatter(&logrus.JSONFormatter{
-		TimestampFormat: "2006-01-02 15:04:05", // 让人类读得懂的时间格式
+		TimestampFormat: "2006-01-02 15:04:05", // 时间格式
 	})
 
 	// 4. 设置日志级别
 	Log.SetLevel(logrus.InfoLevel)
 
-	// [可选] 如果你想知道是哪行代码打印的日志，可以开启这个，但会消耗一点点性能
+	// 知道是哪行代码打印的日志，消耗一点点性能
 	// Log.SetReportCaller(true)
 }
