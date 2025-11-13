@@ -1,0 +1,13 @@
+package models
+
+import (
+	"gorm.io/gorm"
+)
+
+type User struct {
+	gorm.Model
+	Name     string `gorm:"type:varchar(20);not null"`
+	Email    string `gorm:"type:varchar(100);not null;unique"`
+	Password string `gorm:"type:varchar(255);not null"`
+	Posts    []Post `gorm:"foreignKey:UserID"`
+}
