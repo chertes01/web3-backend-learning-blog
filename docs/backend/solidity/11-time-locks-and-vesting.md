@@ -15,90 +15,149 @@
 
 ```solidity
 // SPDX-License-Identifier: MIT
+// 许可证声明，指明此合约的开源协议为 MIT，可以自由复制、使用、修改
 pragma solidity ^0.8.20;
+
 
 // 导入 Chainlink 预言机接口，用于获取 ETH/USD 价格
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 
+
 contract FundMe {
 
-    // State Variables
-    mapping(address => uint256) public s_addressToAmountFunded;
-    address[] public s_funders;
 
-    uint256 public constant MINIMUM_USD = 2 * 10**18; // 2 USD
+// 定义映射，记录每个用户最后一次 fund 的金额
+mapping(address => uint256) public FundsToAmount;
 
-    address public immutable i_owner;
-    uint256 public immutable i_deploymentTimestamp;
-    uint256 public immutable i_lockTime;
+// 定义映射，记录每个用户累计的 fund 总金额
+mapping(address => uint256) public User_Amount;
 
-    AggregatorV3Interface internal s_dataFeed;
+// 定义最小转账金额，2 * 10^18，单位为 USD * 10^18（使用 Chainlink 数据时常以 8 位精度返回，需要自行换算）
+uint256 MINIMUM_VALUE = 2 * 10 ** 18; // 2 USD
 
-    // Modifiers
-    modifier onlyOwner() {
-        require(msg.sender == i_owner, "Not owner");
-        _;
-    }
+// 定义目标金额常量，10 * 10^18，达到此值后 owner 可提取资金
+uint256 constant getAmount = 10 * 10 ** 18;
 
-    modifier beforeLockTimeEnds() {
-        require(block.timestamp < i_deploymentTimestamp + i_lockTime, "Lock time has passed");
-        _;
-    }
+// 合约拥有者地址
+address public owner;
 
-    modifier afterLockTimeEnds() {
-        require(block.timestamp >= i_deploymentTimestamp + i_lockTime, "Lock time has not passed");
-        _;
-    }
+//时间戳
+uint256 deploymentTimestamp;
+//锁仓时长
+uint256 lockTime;
 
-    // Functions
-    constructor(uint256 _lockTime) {
-        i_owner = msg.sender;
-        i_deploymentTimestamp = block.timestamp;
-        i_lockTime = _lockTime;
-        s_dataFeed = AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306); // Sepolia ETH/USD
-    }
+// Chainlink 预言机接口对象
+AggregatorV3Interface internal dataFeed;
 
-    function fund() external payable beforeLockTimeEnds {
-        require(getConversionRate(msg.value) >= MINIMUM_USD, "Did not send enough USD!");
-        s_funders.push(msg.sender);
-        s_addressToAmountFunded[msg.sender] += msg.value;
-    }
+// 构造函数，部署合约时执行
+constructor(uint256 _lockTime) {
+    // 指定 Chainlink Sepolia testnet ETH/USD 价格预言机合约地址
+    dataFeed = AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306);
+    // 将部署者设置为 owner
+    owner = msg.sender;
+    // 部署时记录时间
+    deploymentTimestamp=block.timestamp;
+    //锁仓时长
+    lockTime=_lockTime;
+}
 
-    function withdraw() external onlyOwner afterLockTimeEnds {
-        // Reset all funders' balances
-        for (uint256 i = 0; i < s_funders.length; i++) {
-            address funder = s_funders[i];
-            s_addressToAmountFunded[funder] = 0;
-        }
-        s_funders = new address[](0);
+// 更换 owner
+function transferOwnership(address new_owner) public onlyOwner {
+    owner = new_owner;
+}
 
-        // Withdraw the funds
-        (bool success, ) = payable(i_owner).call{value: address(this).balance}("");
-        require(success, "Transfer failed.");
-    }
+// fund 函数：用户向合约转账 ETH
+function fund() external payable {
+    // 检查转入 ETH 金额（换算成 USD）是否大于最小值
+    require(convertETHToUSD(msg.value) >= MINIMUM_VALUE, "Send more ETH");
 
-    function refund() external afterLockTimeEnds {
-        uint256 amountToRefund = s_addressToAmountFunded[msg.sender];
-        require(amountToRefund > 0, "No funds to refund");
+    //判断是否在锁定期外
+    require(block.timestamp<lockTime+deploymentTimestamp,"Windows is closed");
 
-        // Checks-Effects-Interactions Pattern
-        s_addressToAmountFunded[msg.sender] = 0;
+    // 记录用户本次转账金额
+    FundsToAmount[msg.sender] = msg.value;
 
-        (bool success, ) = payable(msg.sender).call{value: amountToRefund}("");
-        require(success, "Refund failed.");
-    }
+    // 累加用户累计转账金额
+    User_Amount[msg.sender] += msg.value;
+}
 
-    // --- Helper Functions ---
+// 从 Chainlink 获取最新 ETH/USD 价格（带8位小数，单位：USD*10^8）
+function getChainlinkDataFeedLatestAnswer() public view returns (int) {
+    (
+        /* uint80 roundId */,
+        int256 answer, // 预言机返回的 ETH/USD 价格
+        /* uint256 startedAt */,
+        /* uint256 updatedAt */,
+        /* uint80 answeredInRound */
+    ) = dataFeed.latestRoundData();
+    return answer;
+}
 
-    function getPrice() public view returns (uint256) {
-        (, int256 answer, , , ) = s_dataFeed.latestRoundData();
-        return uint256(answer);
-    }
+// 将 ETH 金额转换为 USD 金额
+function convertETHToUSD(uint256 ETH_Amount) internal view returns (uint256) {
+    uint256 ETH_Price = uint256(getChainlinkDataFeedLatestAnswer()); // 当前 ETH/USD 价格，单位 USD*10^8
+    // 计算公式：ETH 数量 * ETH 单价 / 10^8（Chainlink 返回带 8 位小数）
+    return ETH_Amount * ETH_Price / (10 ** 8);
+}
 
-    function getConversionRate(uint256 ethAmount) internal view returns (uint256) {
-        uint256 ethPrice = getPrice();
-        return (ethAmount * ethPrice) / (10**8);
-    }
+// getFund 函数：当合约总资金 >= getAmount 时，owner 可提取全部资金
+function getFund() external windowClosed onlyOwner {
+    // 检查合约当前余额（换算成 USD）是否 >= getAmount
+    require(convertETHToUSD(address(this).balance) >= getAmount, "Not enough Funds");
+
+    // transfer 方法：转账 ETH，若失败则 revert
+    payable(msg.sender).transfer(address(this).balance);
+
+    // send 方法：转账 ETH，返回 bool 表示成功或失败（此处注释掉）
+    /*
+    bool success = payable(msg.sender).send(address(this).balance);
+    require(success, "Fail to Transfer Fund");
+    */
+
+    // call 方法：更低层调用，返回 (bool success, bytes memory data)
+    // 格式示例: (bool success, bytes memory result) = addr.call{value:value}("");
+    bool success;
+    (success, ) = payable(msg.sender).call{value:address(this).balance}("");
+    require(success, "transfer failed");
+
+    // 清空调用者的 FundsToAmount 记录（这里设计上有争议，因为 getFund 本意是 owner 提取全部资金）
+    FundsToAmount[msg.sender] = 0;
+}
+
+// refund 函数：当合约总资金 < getAmount 时，用户可申请退款
+function refund() external {
+    // 检查合约余额（换算成 USD）是否小于目标金额
+    require(convertETHToUSD(address(this).balance) < getAmount, "Enough Funds");
+
+    require(block.timestamp>=lockTime+deploymentTimestamp,"Windows is not closed");//需判断合约余额是否达到目标，因此不能直接调用onlyOwner
+
+    // 检查当前用户是否有累计资金记录
+    require(User_Amount[msg.sender] != 0, "No Funds to refund");
+
+    // 记录用户退款金额
+    uint256 refundAmount = User_Amount[msg.sender];
+
+    // 先将用户余额置零，防止重入攻击
+    User_Amount[msg.sender] = 0;
+    FundsToAmount[msg.sender] = 0;
+
+    // 调用 call 方法退款给用户
+    bool success;
+    (success, ) = payable(msg.sender).call{value:refundAmount}("");
+    require(success, "transfer failed");
+}
+
+//判断是否在锁定期内,
+modifier windowClosed(){
+    require(block.timestamp>=lockTime+deploymentTimestamp,"Windows is not closed");
+    _;//放在require后可节省gas
+}
+
+// 确保只有 owner 可以调用
+modifier onlyOwner(){
+    require(msg.sender==owner, "This function can only called by the owner");
+    _; //放在require后可节省gas
+}
 }
 ```
 

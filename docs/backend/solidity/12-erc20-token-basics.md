@@ -14,7 +14,6 @@
 ## 🔍 新知识点解析
 
 #### 1️⃣ Coin 与 Token 的区别
-
 > 这是理解加密资产分类的基础。
 
 | 类型 | 定义 | 示例 |
@@ -47,75 +46,126 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+/*
+功能要求：
+        通证名称 tokenName
+        通证简称 tokenSymbol
+        通证发行数量 totalsupply
+        owner 地址，记录合约创建者
+        balance mapping: 记录每个地址持有的通证数量
+
+核心函数：
+        mint: 铸造通证
+        transfer: 转账通证
+        balanceOf: 查询某地址余额
+*/
+
 contract FundToken {
-    // State Variables
+
+    // 通证名称，例如 "MyToken"
     string public tokenName;
+    // 通证简称，例如 "MTK"
     string public tokenSymbol;
+    // 通证总发行量
     uint256 public totalsupply;
+    // 合约创建者地址
     address public owner;
-
     // balances 映射，记录每个地址的余额
-    // 设为 private，因为我们提供了自定义的 public balanceOf 函数
-    mapping(address => uint256) private balances;
+    mapping (address => uint256) inernal balances;
 
-    // Functions
+    // constructor 构造函数，在合约部署时执行一次
     constructor(string memory _tokenName, string memory _tokenSymbol) {
-        tokenName = _tokenName;
-        tokenSymbol = _tokenSymbol;
-        owner = msg.sender;
+        tokenName = _tokenName; // 初始化通证名称
+        tokenSymbol = _tokenSymbol; // 初始化通证简称
+        owner = msg.sender; // 部署者地址为 owner
     }
 
-    /**
-     * @notice 铸造通证，将 amountToMint 添加到调用者余额和总供应量
-     * @dev 在真实的 ERC20 合约中，此函数通常会带有权限控制
-     */
+    // mint 函数：铸造通证，将 amountToMint 添加到调用者余额和总供应量
     function mint(uint256 amountToMint) public {
-        balances[msg.sender] += amountToMint;
-        totalsupply += amountToMint;
+        balances[msg.sender] += amountToMint; // 调用者余额 + amountToMint
+        totalsupply += amountToMint; // 总发行量 + amountToMint
     }
 
-    /**
-     * @notice 将 `amount` 数量的通证从调用者账户转移到 `payee` 账户
-     */
+    // transfer 函数：转账功能
     function transfer(address payee, uint256 amount) public {
-        require(balances[msg.sender] >= amount, "Not enough balance to transfer");
+        // 检查调用者余额是否足够
+        require(balances[msg.sender] >= amount, "You don't have enough balance to transfer");
+
+        // 从调用者余额中扣除 amount
         balances[msg.sender] -= amount;
+
+        // 给收款人 payee 添加 amount
         balances[payee] += amount;
     }
 
-    /**
-     * @notice 查询指定地址 `addr` 的余额
-     */
+    // balanceOf 函数：查询地址余额
     function balanceOf(address addr) public view returns (uint256) {
-        return balances[addr];
+        return balances[addr]; // 返回指定地址余额
     }
 }
 ```
 
 ---
 
-## 🔧 调用图示（逻辑流程）
+## 🔧 代码结构详解
 
-1.  **部署合约**
-    -   调用 `constructor("MyToken", "MTK")`。
-    -   `tokenName` 被设为 "MyToken"，`tokenSymbol` 被设为 "MTK"。
-    -   `owner` 被设为部署者的地址。
-    -   `totalsupply` 初始为 `0`。
+#### 合约概览
+```solidity
+contract FundToken {
+    string public tokenName;
+    string public tokenSymbol;
+    uint256 public totalsupply;
+    address public owner;
 
-2.  **用户A 调用 `mint(1000)`**
-    -   `balances[用户A]` 增加 `1000`。
-    -   `totalsupply` 增加 `1000`，现在总供应量为 `1000`。
+    mapping (address => uint256) private balances;
+}
+```
+✔️ **知识点**：
+-   `string public tokenName` 定义通证名称，如 `USD Coin`。
+-   `string public tokenSymbol` 定义通证简称，如 `USDC`。
+-   `totalsupply` 表示当前总发行量。
+-   `mapping` 结构存储地址余额。
 
-3.  **用户A 调用 `balanceOf(用户A)`**
-    -   函数返回 `1000`。
+#### 构造函数 `constructor`
+```solidity
+constructor(string memory _tokenName, string memory _tokenSymbol) {
+    tokenName = _tokenName;
+    tokenSymbol = _tokenSymbol;
+    owner = msg.sender;
+}
+```
+✔️ **解读**：
+-   部署合约时，传入名称与简称。
+-   `msg.sender` 为部署者地址，设置为 `owner`。
 
-4.  **用户A 调用 `transfer(用户B, 300)`**
-    -   `require` 检查通过 (1000 >= 300)。
-    -   `balances[用户A]` 减少 `300`，变为 `700`。
-    -   `balances[用户B]` 增加 `300`，变为 `300`。
+#### `mint` 函数
+```solidity
+function mint(uint256 amountToMint) public {
+    balances[msg.sender] += amountToMint;
+    totalsupply += amountToMint;
+}
+```
+🔑 **功能**：铸造 Token，将调用者地址余额增加 `amountToMint`，同时增加 `totalsupply`。
 
-5.  **用户B 调用 `balanceOf(用户B)`**
-    -   函数返回 `300`。
+❗ **注意**：本示例未限制 `mint` 权限，任何人都可 `mint`。正式 ERC20 发行一般限定 `onlyOwner` 调用或预先分配。
+
+#### `transfer` 函数
+```solidity
+function transfer(address payee, uint256 amount) public {
+    require(balances[msg.sender] >= amount, "You don't have enough balance to transfer");
+    balances[msg.sender] -= amount;
+    balances[payee] += amount;
+}
+```
+🔑 **功能**：转账 Token，调用者余额大于等于转账金额才能执行，从 `sender` 扣除 `amount`，给 `payee` 增加 `amount`。
+
+#### `balanceOf` 函数
+```solidity
+function balanceOf(address addr) public view returns(uint256) {
+    return balances[addr];
+}
+```
+🔑 **功能**：查询某地址的 Token 余额。
 
 ---
 
@@ -126,7 +176,7 @@ contract FundToken {
 - ✅ 掌握了实现一个简易 Token 的三个核心动作：
     -   **`mint`**：无中生有地创造代币。
     -   **`transfer`**：在不同账户间转移代币。
-    -   **`balanceOf`**：查询账户持有的代-   币数量。
+    -   **`balanceOf`**：查询账户持有的代币数量。
 
 ---
 
@@ -134,3 +184,4 @@ contract FundToken {
 
 1.  **添加权限控制**：为 `mint` 函数添加一个 `onlyOwner` 修饰符，使得只有合约的部署者才能铸造新的代币。
 2.  **实现 `approve` 和 `transferFrom`**：（挑战）为合约添加 `approve` 和 `transferFrom` 函数，以实现完整的 ERC20 授权转账功能。思考为什么需要 `allowance` 机制，而不仅仅是 `transfer`？
+
